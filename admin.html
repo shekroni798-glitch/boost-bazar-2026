@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>বুস্ট বাজার এডমিন</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;700;800&family=Hind+Siliguri:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #F1F5F2; --surface: #FFFFFF; --fg: #10231A; --muted: #55695E; --line: #D3DED7;
+    --accent: #0B6B4B; --accent-ink: #FFFFFF; --accent-soft: #DDF0E6; --err: #B3261E;
+    --st-pending: #8A5A00; --st-pending-bg: #FFF1DA;
+    --st-processing: #1556B8; --st-processing-bg: #E1ECFF;
+    --st-done: #0B6B4B; --st-done-bg: #DDF0E6;
+    --st-cancelled: #8A2A24; --st-cancelled-bg: #FBE3E0;
+    --font-display: "Baloo Da 2", "Hind Siliguri", "Noto Sans Bengali", sans-serif;
+    --font-body: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1612; --surface: #15221B; --fg: #E5EFE9; --muted: #98AEA2; --line: #27392F;
+      --accent: #3FD08F; --accent-ink: #072015; --accent-soft: #173326; --err: #FF8A80;
+      --st-pending: #F1D49A; --st-pending-bg: #2E2410;
+      --st-processing: #9CC2FF; --st-processing-bg: #172A47;
+      --st-done: #7BE0B0; --st-done-bg: #173326;
+      --st-cancelled: #FFB3AC; --st-cancelled-bg: #3A1A18;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1612; --surface: #15221B; --fg: #E5EFE9; --muted: #98AEA2; --line: #27392F;
+    --accent: #3FD08F; --accent-ink: #072015; --accent-soft: #173326; --err: #FF8A80;
+    --st-pending: #F1D49A; --st-pending-bg: #2E2410;
+    --st-processing: #9CC2FF; --st-processing-bg: #172A47;
+    --st-done: #7BE0B0; --st-done-bg: #173326;
+    --st-cancelled: #FFB3AC; --st-cancelled-bg: #3A1A18;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 48px;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.25; }
+  p { margin: 0; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0; flex-wrap: wrap; }
+  .brand { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; }
+  .brand span { color: var(--accent); }
+  .btn { appearance: none; font: inherit; font-weight: 600; cursor: pointer; border: 0; border-radius: 10px; padding: 9px 16px; background: var(--accent); color: var(--accent-ink); }
+  .btn.alt { background: var(--surface); color: var(--fg); border: 1.5px solid var(--line); }
+  .btn[disabled] { opacity: 0.6; cursor: default; }
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"], select {
+    font: inherit; padding: 9px 11px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); min-width: 0; width: 100%;
+  }
+  label { font-weight: 600; font-size: 0.92rem; }
+  .field { display: grid; gap: 4px; min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+  .login { max-width: 400px; margin: 40px auto; display: grid; gap: 14px; }
+  .err { color: var(--err); font-size: 0.92rem; }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab { appearance: none; font: inherit; font-weight: 600; cursor: pointer; padding: 9px 18px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); }
+  .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat small { color: var(--muted); display: block; }
+  .stat b { font-family: var(--font-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .bar select { width: auto; }
+  .list { display: grid; gap: 10px; }
+  .order { display: grid; gap: 8px; }
+  .o-head { display: flex; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; align-items: baseline; }
+  .o-head strong { font-family: var(--font-display); font-size: 1.1rem; }
+  .o-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 6px 16px; }
+  .o-grid div { min-width: 0; overflow-wrap: anywhere; }
+  .o-grid small { color: var(--muted); display: block; font-size: 0.82rem; }
+  .o-foot { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .o-foot select { width: auto; }
+  .pill { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+  .pill.pending { color: var(--st-pending); background: var(--st-pending-bg); }
+  .pill.processing { color: var(--st-processing); background: var(--st-processing-bg); }
+  .pill.done { color: var(--st-done); background: var(--st-done-bg); }
+  .pill.cancelled { color: var(--st-cancelled); background: var(--st-cancelled-bg); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .rate { display: grid; gap: 10px; grid-template-columns: 1fr; align-items: end; }
+  @media (min-width: 720px) { .rate { grid-template-columns: 1.1fr 110px 1.6fr auto auto; } }
+  .rate .name { font-weight: 600; }
+  .chk { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+  .grp { margin: 18px 0 8px; font-size: 1.15rem; }
+  .settings { display: grid; gap: 12px; max-width: 480px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">বুস্ট<span>বাজার</span> এডমিন</div>
+    <div id="who" hidden><span class="muted" id="whoMail"></span> <button class="btn alt" id="logout" type="button">লগআউট</button></div>
+  </div>
+
+  <div class="card login" id="setupNote" hidden>
+    <h2>Supabase সেট করা হয়নি</h2>
+    <p>config.js ফাইলে Supabase এর Project URL আর anon/publishable key বসান, তারপর পেজটি আবার খুলুন।</p>
+  </div>
+
+  <form class="card login" id="loginForm" hidden>
+    <h2>এডমিন লগইন</h2>
+    <div class="field"><label for="email">ইমেইল</label><input type="email" id="email" autocomplete="username" required></div>
+    <div class="field"><label for="password">পাসওয়ার্ড</label><input type="password" id="password" autocomplete="current-password" required></div>
+    <div class="err" id="loginErr" role="alert"></div>
+    <button class="btn" type="submit" id="loginBtn">লগইন করুন</button>
+  </form>
+
+  <div id="panel" hidden>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-t="orders" aria-selected="true">অর্ডার</button>
+      <button class="tab" role="tab" data-t="rates" aria-selected="false">রেট ও প্যাকেজ</button>
+      <button class="tab" role="tab" data-t="settings" aria-selected="false">সেটিংস</button>
+    </div>
+
+    <section id="t-orders">
+      <div class="stats">
+        <div class="stat"><small>পেন্ডিং অর্ডার</small><b id="sPending">-</b></div>
+        <div class="stat"><small>আজকের অর্ডার</small><b id="sToday">-</b></div>
+        <div class="stat"><small>সম্পন্ন অর্ডারের মোট টাকা</small><b id="sRevenue">-</b></div>
+      </div>
+      <div class="bar">
+        <select id="filter" aria-label="স্ট্যাটাস ফিল্টার">
+          <option value="all">সব অর্ডার</option>
+          <option value="pending">পেন্ডিং</option>
+          <option value="processing">চলছে</option>
+          <option value="done">সম্পন্ন</option>
+          <option value="cancelled">বাতিল</option>
+        </select>
+        <button class="btn alt" id="refresh" type="button">রিফ্রেশ</button>
+        <span class="muted" id="ordersMsg" aria-live="polite"></span>
+      </div>
+      <div class="list" id="orderList"></div>
+    </section>
+
+    <section id="t-rates" hidden>
+      <p class="muted">প্রতি ১টার দাম (টাকা) আর প্যাকেজের পরিমাণ কমা দিয়ে লিখুন, যেমন: 100, 500, 1000। বন্ধ করলে সার্ভিসটি সাইটে দেখাবে না।</p>
+      <div id="rateList"></div>
+    </section>
+
+    <section id="t-settings" hidden>
+      <form class="card settings" id="setForm">
+        <div class="field"><label for="s-brand">সার্ভিসের নাম</label><input type="text" id="s-brand"></div>
+        <div class="field"><label for="s-whatsapp">WhatsApp নম্বর (দেশের কোড সহ, যেমন 8801712345678)</label><input type="text" id="s-whatsapp" inputmode="numeric"></div>
+        <div class="field"><label for="s-bkash">বিকাশ নম্বর</label><input type="text" id="s-bkash" inputmode="numeric"></div>
+        <div class="field"><label for="s-nagad">নগদ নম্বর</label><input type="text" id="s-nagad" inputmode="numeric"></div>
+        <button class="btn" type="submit">সেভ করুন</button>
+        <p class="muted" id="setMsg" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const bn = n => Number(n).toLocaleString("bn-BD");
+  const PLAT = { facebook: "Facebook", youtube: "YouTube", instagram: "Instagram" };
+  const ST = { pending: "পেন্ডিং", processing: "চলছে", done: "সম্পন্ন", cancelled: "বাতিল" };
+  const PAY = { bkash: "বিকাশ", nagad: "নগদ" };
+  const C = window.APP_CONFIG || {};
+  let sb = null, orders = [], timer = null;
+
+  if (!C.supabaseUrl || !C.supabaseKey || !window.supabase) {
+    $("setupNote").hidden = false;
+  } else {
+    sb = window.supabase.createClient(C.supabaseUrl, C.supabaseKey);
+    sb.auth.getSession().then(({ data }) => show(data.session));
+    sb.auth.onAuthStateChange((_e, session) => show(session));
+  }
+
+  function show(session) {
+    const on = !!session;
+    $("loginForm").hidden = on;
+    $("panel").hidden = !on;
+    $("who").hidden = !on;
+    clearInterval(timer);
+    if (on) {
+      $("whoMail").textContent = session.user.email;
+      loadOrders(); loadRates(); loadSettings();
+      timer = setInterval(loadOrders, 30000);
+    }
+  }
+
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("loginErr").textContent = ""; $("loginBtn").disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+    $("loginBtn").disabled = false;
+    if (error) $("loginErr").textContent = "ইমেইল বা পাসওয়ার্ড ভুল।";
+  });
+  $("logout").addEventListener("click", () => sb.auth.signOut());
+
+  document.querySelector(".tabs").addEventListener("click", e => {
+    const t = e.target.closest(".tab"); if (!t) return;
+    document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(b === t)));
+    ["orders", "rates", "settings"].forEach(k => { $("t-" + k).hidden = k !== t.dataset.t; });
+  });
+
+  /* ---------- অর্ডার ---------- */
+  const fmtDate = d => new Date(d).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dhaka" });
+  const dayKey = d => new Date(d).toLocaleDateString("en-CA", { timeZone: "Asia/Dhaka" });
+
+  async function loadOrders() {
+    $("ordersMsg").textContent = "লোড হচ্ছে...";
+    const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error) { $("ordersMsg").textContent = "অর্ডার লোড করা যায়নি। এই ইমেইলটি এডমিন হিসেবে সেট করা আছে কিনা দেখুন।"; return; }
+    orders = data;
+    $("ordersMsg").textContent = "";
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const today = dayKey(new Date());
+    $("sPending").textContent = bn(orders.filter(o => o.status === "pending").length);
+    $("sToday").textContent = bn(orders.filter(o => dayKey(o.created_at) === today).length);
+    $("sRevenue").textContent = "৳" + bn(orders.filter(o => o.status === "done").reduce((a, o) => a + Number(o.price), 0));
+    const f = $("filter").value;
+    const rows = orders.filter(o => f === "all" || o.status === f);
+    $("orderList").innerHTML = rows.length ? rows.map(o => `
+      <article class="card order">
+        <div class="o-head">
+          <strong>#${esc(o.id.slice(0, 6).toUpperCase())} · ${esc(PLAT[o.platform] || o.platform)} ${esc(o.service)} · <span class="num">${bn(o.quantity)}</span></strong>
+          <span class="pill ${esc(o.status)}">${esc(ST[o.status] || o.status)}</span>
+        </div>
+        <div class="o-grid">
+          <div><small>মূল্য</small><b class="num">৳${bn(o.price)}</b></div>
+          <div><small>সময়</small>${esc(fmtDate(o.created_at))}</div>
+          <div><small>কাস্টমার</small>${esc(o.customer_name)} · <span class="num">${esc(o.phone)}</span></div>
+          <div><small>পেমেন্ট</small>${esc(PAY[o.pay_method] || o.pay_method)}${o.trx_id ? " · " + esc(o.trx_id) : " · TrxID নেই"}</div>
+          <div><small>লিংক</small>${/^https?:\/\//i.test(o.link) ? `<a href="${esc(o.link)}" target="_blank" rel="noopener noreferrer">${esc(o.link)}</a>` : esc(o.link)}</div>
+        </div>
+        <div class="o-foot">
+          <label for="st-${esc(o.id)}">স্ট্যাটাস</label>
+          <select id="st-${esc(o.id)}" data-id="${esc(o.id)}">
+            ${Object.keys(ST).map(k => `<option value="${k}" ${k === o.status ? "selected" : ""}>${ST[k]}</option>`).join("")}
+          </select>
+        </div>
+      </article>`).join("") : '<p class="muted">কোনো অর্ডার নেই।</p>';
+  }
+
+  $("filter").addEventListener("change", renderOrders);
+  $("refresh").addEventListener("click", loadOrders);
+  $("orderList").addEventListener("change", async e => {
+    const s = e.target.closest("select[data-id]"); if (!s) return;
+    s.disabled = true;
+    const { error } = await sb.from("orders").update({ status: s.value }).eq("id", s.dataset.id);
+    s.disabled = false;
+    if (error) { $("ordersMsg").textContent = "স্ট্যাটাস বদলানো যায়নি।"; loadOrders(); return; }
+    const o = orders.find(x => x.id === s.dataset.id); if (o) o.status = s.value;
+    renderOrders();
+  });
+
+  /* ---------- রেট ---------- */
+  async function loadRates() {
+    const { data, error } = await sb.from("services").select("*").order("platform").order("sort");
+    if (error) { $("rateList").innerHTML = '<p class="err">রেট লোড করা যায়নি।</p>'; return; }
+    let html = "", last = "";
+    data.forEach(s => {
+      if (s.platform !== last) { html += `<h3 class="grp">${esc(PLAT[s.platform] || s.platform)}</h3>`; last = s.platform; }
+      html += `
+      <div class="card rate" style="margin-bottom:8px" data-id="${s.id}">
+        <div class="name">${esc(s.title)}<br><span class="muted">${esc(s.hint)}</span></div>
+        <div class="field"><label for="r-${s.id}">প্রতি ১টা (৳)</label><input type="number" id="r-${s.id}" step="0.01" min="0.01" value="${esc(s.rate)}"></div>
+        <div class="field"><label for="q-${s.id}">প্যাকেজের পরিমাণ</label><input type="text" id="q-${s.id}" value="${esc(s.qty.join(", "))}"></div>
+        <label class="chk"><input type="checkbox" id="a-${s.id}" ${s.active ? "checked" : ""}> চালু</label>
+        <button class="btn" type="button" data-save="${s.id}">সেভ</button>
+      </div>`;
+    });
+    $("rateList").innerHTML = html;
+  }
+
+  $("rateList").addEventListener("click", async e => {
+    const b = e.target.closest("button[data-save]"); if (!b) return;
+    const id = b.dataset.save;
+    const rate = parseFloat($("r-" + id).value);
+    const qty = $("q-" + id).value.split(",").map(x => parseInt(x.trim(), 10)).filter(n => n > 0);
+    if (!(rate > 0) || !qty.length) { b.textContent = "ভুল তথ্য"; setTimeout(() => (b.textContent = "সেভ"), 1500); return; }
+    b.disabled = true;
+    const { error } = await sb.from("services").update({ rate, qty, active: $("a-" + id).checked }).eq("id", id);
+    b.disabled = false;
+    b.textContent = error ? "ব্যর্থ" : "সেভ হয়েছে";
+    setTimeout(() => (b.textContent = "সেভ"), 1500);
+  });
+
+  /* ---------- সেটিংস ---------- */
+  const SET_KEYS = ["brand", "whatsapp", "bkash", "nagad"];
+  async function loadSettings() {
+    const { data } = await sb.from("settings").select("*");
+    (data || []).forEach(r => { if (SET_KEYS.includes(r.key)) $("s-" + r.key).value = r.value; });
+  }
+  $("setForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const rows = SET_KEYS.map(k => ({ key: k, value: $("s-" + k).value.trim() }));
+    const { error } = await sb.from("settings").upsert(rows);
+    $("setMsg").textContent = error ? "সেভ করা যায়নি।" : "সেভ হয়েছে। কাস্টমার পেজে নতুন তথ্য দেখাবে।";
+  });
+</script>
+</body>
+</html>
